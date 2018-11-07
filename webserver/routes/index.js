@@ -1,3 +1,5 @@
+//For ease of accessing each key/value pair use Node's builtin querystring module to convert data to an object.
+var querystring = require('querystring');
 var express = require('express');
 var router = express.Router();
 //Fetch doesn't exist on server-side JavaScript, so we impoort a package which implements the functionality.
@@ -47,15 +49,30 @@ function refresh(callback) {
 	//Then, use writeTokenFile() to write the token file. Pass it a callback function for what should occur once the file is written.
 }
 
-
 function makeAPIRequest(spotify_endpoint, res) {
 	var headers = {
 		'Content-Type':'application/x-www-form-urlencoded',
 		'Authorization': 'Bearer ' + access_token
 	};
 
-	//TODO: use fetch() to make the API call.
+	var init = {
+		method: 'GET',
+		headers: headers,
+		json: true
+	};
+
+	//use fetch() to make the API call.
 	//parse the response send it back to the Angular client with res.json()
+	fetch(spotify_base_uri + spotify_endpoint, init)
+	.then(function(response) {
+		return response.json()
+	})
+	.then(function(json) {
+		console.log(json);
+	})
+	.catch(function(error) {
+		console.log(error);
+	});
 
 	//Once refresh() is working, check whether the status code is 401 (unauthorized)
 	//If so, refresh the access token and make the API call again.
@@ -78,8 +95,13 @@ router.get('*', function(req, res, next) {
 router.get('/login', function(req, res, next) {
 	var scopes = 'user-read-private user-read-email';
 
-	//TODO: use res.redirect() to send the user to Spotify's authentication page.
-	//Use encodeURIComponent() to make escape necessary characters.
+	//use res.redirect() to send the user to Spotify's authentication page.
+	//use encodeURIComponent() to make escape necessary characters.
+	res.redirect('https://accounts.spotify.com/authorize?' +
+		'response_type=code' +
+		'&client_id=' + my_client_id +
+		'&scope=' + encodeURIComponent(scopes) +
+		'&redirect_uri=' + encodeURIComponent(redirect_uri));
 });
 
 router.get('/callback', function(req, res, next) {
@@ -91,14 +113,37 @@ router.get('/callback', function(req, res, next) {
 	params.append('grant_type', 'authorization_code');
 
 	var headers = {
-		'Content-Type':'application/x-www-form-urlencoded',
+		'Content-Type': 'application/x-www-form-urlencoded',
 		'Authorization': 'Basic ' + Buffer.from(my_client_id + ':' + my_client_secret).toString('base64')
 	};
 
-	//TODO: use fetch() to exchange the code for an access token and refresh token.
-	//When the fetch() promise completes, parse the response.
-	//Then, use writeTokenFile() to write the token file. Pass it a callback function for what should occur once the file is written.
-	//Once the token is written, redirect the user back to the Angular client with res.redirect().
+	var init = {
+		method: 'POST',
+		headers: headers,
+		body: params,
+		json: true
+	};
+
+	fetch('https://accounts.spotify.com/api/token/', init)
+		.then(function(response) {
+			console.log('Status [%s] %s', response.status, response.statusText);
+			return response.json();
+		})
+		.then(function(json) {
+			access_token = json.access_token;
+			refresh_token = json.refresh_token;
+			console.log("access_token=%s\nrefresh_token=%s", access_token, refresh_token);
+			if (access_token != null && refresh_token != null) {
+				writeTokenFile(function() {
+					console.log('returning to client_uri');
+					res.redirect(client_uri);
+				});
+			}
+		})
+		.catch(function(error) {
+			console.log("catch caught error:\n" + error);
+			res.redirect(redirect_uri + '/login'); //return to login page to try again
+		});
 });
 
 /*This function does not need to be edited.*/
