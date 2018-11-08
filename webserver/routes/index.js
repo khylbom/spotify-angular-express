@@ -1,5 +1,3 @@
-//For ease of accessing each key/value pair use Node's builtin querystring module to convert data to an object.
-var querystring = require('querystring');
 var express = require('express');
 var router = express.Router();
 //Fetch doesn't exist on server-side JavaScript, so we impoort a package which implements the functionality.
@@ -21,6 +19,8 @@ var refresh_token = null;
 
 /*This function does not need to be edited.*/
 function writeTokenFile(callback) {
+	console.log('hello from webserver.writeTokenFile()');
+	console.log('callback: ' + callback);
 	fs.writeFile('tokens.json', JSON.stringify({access_token: access_token, refresh_token: refresh_token}), callback);
 }
 
@@ -43,36 +43,93 @@ function readTokenAndClientSecretFiles(callback) {
 }
 
 function refresh(callback) {
+	console.log('hello from webserver.refresh()');
+	console.log('callback: ' + callback);
+
+	const params = new URLSearchParams();
+	params.append('grant_type', 'refresh_token');
+	params.append('refresh_token', refresh_token);
+
+	var headers = {
+		'Content-Type': 'application/x-www-form-urlencoded',
+		'Authorization': 'Basic ' + Buffer.from(my_client_id + ':' + my_client_secret).toString('base64')
+	};
+
+	//use fetch() to use the refresh token to get a new access token.
+	//body and headers arguments are similar to the /callback endpoing
+	fetch('https://accounts.spotify.com/api/token/', {
+		method: 'POST',
+		headers: headers,
+		body: params,
+		json: true
+	})
+		.then(function(response) {
+			return response.json();
+		})
+		.then(function(data) {
+
+			console.log(data);
+			access_token = data.access_token; //we don't get a new refresh token
+			if (access_token != null && refresh_token != null) {
+				writeTokenFile(callback);
+			}
+		})
+		.then(function() {
+			callback();
+		})
+		.catch(function(error) {
+			console.log('in refresh(): ' + error);
+			reject(error);
+		});
+	
 	//TODO: use fetch() to use the refresh token to get a new access token.
 	//body and headers arguments will be similar the /callback endpoint.
+
 	//When the fetch() promise completes, parse the response.
 	//Then, use writeTokenFile() to write the token file. Pass it a callback function for what should occur once the file is written.
 }
 
+// async function makeAPIRequest(spotify_endpoint, res) {
+// 	let data = await fetch(spotify_base_uri + spotify_endpoint, {
+// 		method: 'GET',
+// 		headers: headers,
+// 		json: true
+// 	});
+// 	let main = await data.json();
+// 	console.log(main);
+// }
+
 function makeAPIRequest(spotify_endpoint, res) {
+	console.log('hello from webserver.makeAPIRequest()');
+	console.log(access_token);
 	var headers = {
-		'Content-Type':'application/x-www-form-urlencoded',
+		'Accept': 'application/json',
+		'Content-Type':'application/json',
 		'Authorization': 'Bearer ' + access_token
 	};
-
-	var init = {
+	//use fetch() to make the API call.
+	//parse the response send it back to the Angular client with res.json()
+	return fetch(spotify_base_uri + spotify_endpoint, {
 		method: 'GET',
 		headers: headers,
 		json: true
-	};
-
-	//use fetch() to make the API call.
-	//parse the response send it back to the Angular client with res.json()
-	fetch(spotify_base_uri + spotify_endpoint, init)
-	.then(function(response) {
-		return response.json()
 	})
-	.then(function(json) {
-		console.log(json);
+	.then(response => response.json())
+	.then(data => {
+		console.log('data: ' + JSON.stringify(data));
+		res.send(data);
 	})
-	.catch(function(error) {
-		console.log(error);
-	});
+	.catch(error => console.error(error))
+	// 	// if (data.error.status == 401) {
+	// 	// 	refresh(function() { //callback is this function
+	// 	// 		makeAPIRequest(spotify_endpoint, res);
+	// 	// 	});
+	// 	// 	resolve(json);
+	// 	// }
+	// 	// res.send(json);
+	// .catch(function(error) {
+	// 	console.log('in makeAPIRequest(): ' + JSON.stringify(error));
+	// });
 
 	//Once refresh() is working, check whether the status code is 401 (unauthorized)
 	//If so, refresh the access token and make the API call again.
@@ -93,6 +150,7 @@ router.get('*', function(req, res, next) {
 });
 
 router.get('/login', function(req, res, next) {
+	console.log('hello from webserver./login');
 	var scopes = 'user-read-private user-read-email';
 
 	//use res.redirect() to send the user to Spotify's authentication page.
@@ -105,6 +163,7 @@ router.get('/login', function(req, res, next) {
 });
 
 router.get('/callback', function(req, res, next) {
+	console.log('hello from webserver./callback');
 	var code = req.query.code || null;
 
 	const params = new URLSearchParams();
@@ -117,31 +176,27 @@ router.get('/callback', function(req, res, next) {
 		'Authorization': 'Basic ' + Buffer.from(my_client_id + ':' + my_client_secret).toString('base64')
 	};
 
-	var init = {
+	fetch('https://accounts.spotify.com/api/token/', {
 		method: 'POST',
 		headers: headers,
 		body: params,
 		json: true
-	};
-
-	fetch('https://accounts.spotify.com/api/token/', init)
+	})
 		.then(function(response) {
-			console.log('Status [%s] %s', response.status, response.statusText);
+			console.log('OAUTH2: status %s %s', response.status, response.statusText);
 			return response.json();
 		})
 		.then(function(json) {
 			access_token = json.access_token;
 			refresh_token = json.refresh_token;
-			console.log("access_token=%s\nrefresh_token=%s", access_token, refresh_token);
 			if (access_token != null && refresh_token != null) {
 				writeTokenFile(function() {
-					console.log('returning to client_uri');
 					res.redirect(client_uri);
 				});
 			}
 		})
 		.catch(function(error) {
-			console.log("catch caught error:\n" + error);
+			console.log("Caught error:\n" + error);
 			res.redirect(redirect_uri + '/login'); //return to login page to try again
 		});
 });
@@ -153,6 +208,7 @@ router.get('/', function(req, res, next) {
 
 /*This function does not need to be edited.*/
 router.get('/me', function(req, res, next) {
+	console.log('/me makes api request to ' + req.url);
 	makeAPIRequest(spotify_base_uri + '/me', res);
 });
 

@@ -6,23 +6,41 @@ import { TrackData } from '../data/track-data';
 import { ResourceData } from '../data/resource-data';
 import { ProfileData } from '../data/profile-data';
 import { TrackFeatures } from '../data/track-features';
+import { resolve } from 'url';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SpotifyService {
-	expressBaseUrl:string = 'http://localhost:8888';
+  expressBaseUrl:string = 'http://localhost:8888';
 
   constructor(private http:HttpClient) { }
 
   private sendRequestToExpress(endpoint:string):Promise<any> {
+    console.log('hello from spotify.service.sendRequestToExpress()\n')
+    console.log('SpotifyService sending request to express at ' + this.expressBaseUrl + endpoint);
     //TODO: use the injected http Service to make a get request to the Express endpoint and return the response.
     //the http service works similarly to fetch(). It may be useful to call .toPromise() on any responses.
     //update the return to instead return a Promise with the data from the Express server
-    return Promise.resolve();
+    let promise = new Promise((resolve, reject) => {
+      let url = this.expressBaseUrl + endpoint;
+      console.log('GET ' + url);
+      this.http.get(url)
+        .toPromise()
+        .then(function(response) { //success
+          console.log('response from Express: ' + JSON.stringify(response));
+          resolve(response);
+        })
+        .catch(error => { //error
+          console.log('sendRequestToExpress() error: ' + JSON.stringify(error));
+          reject(error);
+        });
+    });
+    return promise;
   }
 
   aboutMe():Promise<ProfileData> {
+    console.log('hello from spotify.service.aboutMe()\n');
     return this.sendRequestToExpress('/me').then((data) => {
       return new ProfileData(data);
     });
