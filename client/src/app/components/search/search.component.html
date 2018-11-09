@@ -1,12 +1,54 @@
 <h1>Search Spotify</h1>
+<form>
+	<div class="form-row">
+		<div class="col-6 col-med">
+			<input type="search" class="form-control" placeholder="Search" aria-label="Search">
+		</div>
+		<div class="col-med">
+			<select class="form-control">
+				<option *ngFor="let category of searchCategories">
+					{{category}}
+				</option>
+			</select>
+		</div>
+		<div class="col-med">
+			<button type="submit" class="btn btn-light">
+				Search
+			</button>
+		</div>
+	</div>
+</form>
+			<!-- <button class="btn btn-light dropdown-toggle" type="button" id="categoryDropdownButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+				Category
+			</button>
+			<div class="dropdown-menu" aria-labeledby="categoryDropdownButton">
+				<a class="dropdown-item" href="#" *ngFor="let category of searchCategories">
+					{{category}}
+				</a>
+			</div>
+			<button class="btn btn-light">Search</button>
+		</div>
+	</div>
+</form> -->
 <!--TODO: bind input's model to searchString-->
-<input>
+<!-- <input> -->
 <!--TODO: bind select's model to searchCategory-->
+<!--used Bootstrap dropdown instead of select model-->
+<!-- <div class="dropdown">
+	<button class="btn btn-light dropdown-toggle" type="button" id="categoryDropdownButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+		{{searchCategory}}
+	</button>
+	<div class="dropdown-menu" aria-labelledby="categoryDropdownButton">
+		<a class="dropdown-item" *ngFor="let category of searchCategories">
+			{{category}}
+		</a>
+	</div>
+</div>
 <select>
-	<!--TODO: loop over searchCategories to create dropdown options-->
-	<!--populate body and text value https://www.w3schools.com/tags/att_option_selected.asp-->
-</select>
+	TODO: loop over searchCategories to create dropdown options
+	populate body and text value https://www.w3schools.com/tags/att_option_selected.asp
+</select> -->
 <!--TODO: Call search function when the button is clicked-->
-<button class="btn btn-light">Search</button>
+<!-- <button class="btn btn-light">Search</button> -->
 <!--TODO: Display a carousel component if searching for an artist or album. Bind carousel's resources and give it a static carouselId.-->
 <!--TODO: Display a track-list component if searching for a track. Bind track-list's tracks.-->

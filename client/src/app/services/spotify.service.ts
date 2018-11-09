@@ -26,13 +26,6 @@ export class SpotifyService {
     return this.http.get(this.expressBaseUrl + endpoint)
       .toPromise()
       .then(res => { return res; })
-      // .then(res => JSON.stringify(res))
-      // .then(data => JSON.parse(data))
-      // .then(result => {
-      //   console.log(typeof(result) + ": " + result);
-      //   console.log('display name: ' + result.display_name);
-      //   return result;
-      // })
       .catch(error => {
         console.log('from sendRequestToExpress(): ' + error);
         return error;
