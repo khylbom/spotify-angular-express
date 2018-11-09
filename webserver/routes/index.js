@@ -63,16 +63,13 @@ function refresh(callback) {
 		body: params,
 		json: true
 	})
-		.then(function(response) {
-			return response.json();
-		})
-		.then(function(data) {
-
+	//when fetch() promise completes, parse the response.
+	//then, use writeTokenFile() to write the token file, passing it the callback function
+		.then(response => response.json())
+		.then(function(data) { //parse response and write token file
 			console.log(data);
-			access_token = data.access_token; //we don't get a new refresh token
-			if (access_token != null && refresh_token != null) {
-				writeTokenFile(callback);
-			}
+			access_token = data.access_token;
+			access_token == null ? reject('null access_token') : writeTokenFile(callback);
 		})
 		.then(function() {
 			callback();
@@ -81,59 +78,42 @@ function refresh(callback) {
 			console.log('in refresh(): ' + error);
 			reject(error);
 		});
-	
-	//TODO: use fetch() to use the refresh token to get a new access token.
-	//body and headers arguments will be similar the /callback endpoint.
-
-	//When the fetch() promise completes, parse the response.
-	//Then, use writeTokenFile() to write the token file. Pass it a callback function for what should occur once the file is written.
 }
-
-// async function makeAPIRequest(spotify_endpoint, res) {
-// 	let data = await fetch(spotify_base_uri + spotify_endpoint, {
-// 		method: 'GET',
-// 		headers: headers,
-// 		json: true
-// 	});
-// 	let main = await data.json();
-// 	console.log(main);
-// }
 
 function makeAPIRequest(spotify_endpoint, res) {
 	console.log('hello from webserver.makeAPIRequest()');
-	console.log(access_token);
+	console.log('access_token: ' + access_token);
+
 	var headers = {
-		'Accept': 'application/json',
-		'Content-Type':'application/json',
+		'Content-Type': 'application/json',
 		'Authorization': 'Bearer ' + access_token
 	};
+
 	//use fetch() to make the API call.
 	//parse the response send it back to the Angular client with res.json()
-	return fetch(spotify_base_uri + spotify_endpoint, {
+	fetch(spotify_endpoint, {
 		method: 'GET',
 		headers: headers,
 		json: true
 	})
-	.then(response => response.json())
+	// .then(response => response.json())
+	.then(response => {
+		if (response.status == 401) {
+			console.log(response.status + " " + response.statusText);
+			//exchange refresh token for new access_token with this function as callback
+			Promise.reject(refresh(() => { //use anonymous function
+				makeAPIRequest(spotify_endpoint, res);
+			}));
+		}
+		return response.json();
+	})
+	.then(json => JSON.stringify(json))
 	.then(data => {
-		console.log('data: ' + JSON.stringify(data));
+		console.log('data: ' + data);
 		res.send(data);
 	})
-	.catch(error => console.error(error))
-	// 	// if (data.error.status == 401) {
-	// 	// 	refresh(function() { //callback is this function
-	// 	// 		makeAPIRequest(spotify_endpoint, res);
-	// 	// 	});
-	// 	// 	resolve(json);
-	// 	// }
-	// 	// res.send(json);
-	// .catch(function(error) {
-	// 	console.log('in makeAPIRequest(): ' + JSON.stringify(error));
-	// });
-
-	//Once refresh() is working, check whether the status code is 401 (unauthorized)
-	//If so, refresh the access token and make the API call again.
-}
+	.catch(error => console.error(error));
+} //end makeAPIRequest()
 
 /*This function does not need to be edited.*/
 router.get('*', function(req, res, next) {
@@ -182,13 +162,11 @@ router.get('/callback', function(req, res, next) {
 		body: params,
 		json: true
 	})
-		.then(function(response) {
-			console.log('OAUTH2: status %s %s', response.status, response.statusText);
-			return response.json();
-		})
-		.then(function(json) {
-			access_token = json.access_token;
-			refresh_token = json.refresh_token;
+		.then(response => response.json())
+		.then(function(data) {
+			console.log('data status: ' + data.status);
+			access_token = data.access_token;
+			refresh_token = data.refresh_token;
 			if (access_token != null && refresh_token != null) {
 				writeTokenFile(function() {
 					res.redirect(client_uri);
@@ -196,7 +174,7 @@ router.get('/callback', function(req, res, next) {
 			}
 		})
 		.catch(function(error) {
-			console.log("Caught error:\n" + error);
+			console.log("in /callback: " + error);
 			res.redirect(redirect_uri + '/login'); //return to login page to try again
 		});
 });

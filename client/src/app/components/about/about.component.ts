@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { SpotifyService } from '../../services/spotify.service';
+import { ProfileData } from 'src/app/data/profile-data';
 
 @Component({
   selector: 'app-about',
@@ -16,16 +17,17 @@ export class AboutComponent implements OnInit {
   constructor(private spotify: SpotifyService) { }
 
   ngOnInit() {
+    this.name = '???';
+    this.profile_link = '_blank'; 
   }
 
   loadAboutMe() {
     console.log('hello from about.component.loadAboutMe()\n');
     this.spotify.aboutMe()
-      .then(function(data) {
-        console.log(data);
-        this.name = data.name || null;
-        this.profile_pic = data.imageURL || null;
-        this.profile_link = data.spotifyProfile || null;
+      .then(profile_data => {
+        this.name = profile_data.name;
+        this.profile_pic = profile_data.imageURL;
+        this.profile_link = profile_data.spotifyProfile;
       })
       .catch(function(error) {
         console.log(error);
