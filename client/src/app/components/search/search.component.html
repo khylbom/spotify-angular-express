@@ -2,17 +2,17 @@
 <form>
 	<div class="form-row">
 		<div class="col-6 col-med">
-			<input type="search" class="form-control" placeholder="Search" aria-label="Search">
+			<input type="search" class="form-control" [ngModel]="searchString" name="searchStringInput" (ngModelChange)="changeSearchString($event)" placeholder="Search" aria-label="Search">
 		</div>
 		<div class="col-med">
-			<select class="form-control">
-				<option *ngFor="let category of searchCategories">
+			<select class="form-control" [ngModel]="searchCategory" name="categoryDropdown" (ngModelChange)="changeCategory($event)">
+				<option *ngFor="let category of searchCategories" [value]="category">
 					{{category}}
 				</option>
 			</select>
 		</div>
 		<div class="col-med">
-			<button type="submit" class="btn btn-light">
+			<button type="submit" class="btn btn-light" (click)="search()">
 				Search
 			</button>
 		</div>

@@ -6,24 +6,23 @@ import { ProfileData } from 'src/app/data/profile-data';
   selector: 'app-about',
   templateUrl: './about.component.html',
   styleUrls: ['./about.component.css'],
-  providers: [SpotifyService]
+  providers: [ SpotifyService ]
 })
 export class AboutComponent implements OnInit {
   name:string = null;
   profile_pic:string = "../../../assets/unknown.jpg";
   profile_link:string = null;
 
-  //TODO: inject the Spotify service
-  constructor(private spotify: SpotifyService) { }
+  //inject the Spotify service
+  constructor(private spotifyService: SpotifyService) { }
 
   ngOnInit() {
-    this.name = '???';
-    this.profile_link = '_blank'; 
+    this.name = '???'; 
   }
 
   loadAboutMe() {
     console.log('hello from about.component.loadAboutMe()\n');
-    this.spotify.aboutMe()
+    this.spotifyService.aboutMe()
       .then(profile_data => {
         this.name = profile_data.name;
         this.profile_pic = profile_data.imageURL;
