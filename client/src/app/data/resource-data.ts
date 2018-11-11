@@ -16,9 +16,7 @@ export abstract class ResourceData {
 			this.imageURL = '../../assets/unknown.jpg';
 		}
 
-		//modified this function slightly because it was angry the way it was
 		if('spotify' in objectModel['external_urls']) {
-		// if(objectModel['external_urls'] && objectModel['external_urls']['spotify']) {
 			this.url = objectModel['external_urls']['spotify'];
 		}
 	}
