@@ -22,32 +22,23 @@ export class SearchComponent implements OnInit {
   }
 
   search() {
-    console.log("searching for " + this.searchCategory + "s... '" + this.searchString + "'...");
     //call search function in spotifyService and parse response
     this.spotifyService.searchFor(this.searchCategory, this.searchString)
       .then(resourceData => {
         this.resources = resourceData;
-        console.log(this.resources);
+        console.debug(this.resources);
       })
-      .catch(error => { console.log(error); })
+      .catch(error => console.error('error performing spotify search: ' + error))
   }
 
   changeSearchString(string) {
     this.searchString = string;
-    console.log(this.searchString);
+    console.debug(this.searchString);
   }
 
   changeCategory(category) {
     this.searchCategory = category;
-    console.log(this.searchCategory);
-  }
-
-  showCarouselResults():boolean {
-    return (this.searchCategory === 'artist' || this.searchCategory === 'album');
-  }
-
-  showTrackListResults():boolean {
-    return (this.searchCategory == 'track');
+    console.debug(this.searchCategory);
   }
 
 }

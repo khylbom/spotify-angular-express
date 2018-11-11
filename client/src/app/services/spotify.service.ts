@@ -17,9 +17,6 @@ export class SpotifyService {
   constructor(private http:HttpClient) { }
 
   private sendRequestToExpress(endpoint:string):Promise<any> {
-    console.log('hello from spotify.service.sendRequestToExpress()\n')
-    console.log('SpotifyService sending request to express at ' + this.expressBaseUrl + endpoint);
-    var result;
     //use the injected http Service to make a get request to the Express endpoint and return the response.
     //the http service works similarly to fetch(). It may be useful to call .toPromise() on any responses.
     //update the return to instead return a Promise with the data from the Express server
@@ -27,13 +24,12 @@ export class SpotifyService {
       .toPromise()
       .then(res => { return res; })
       .catch(error => {
-        console.log('from sendRequestToExpress(): ' + error);
+        console.log('error sending request to express: ' + error);
         return error;
       })
   }
 
   aboutMe():Promise<ProfileData> {
-    console.log('hello from spotify.service.aboutMe()\n');
     return this.sendRequestToExpress('/me').then((data) => {
       return new ProfileData(data);
     });

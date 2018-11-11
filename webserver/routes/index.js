@@ -66,7 +66,9 @@ function refresh(callback) {
 		.then(function(data) { //parse response and write token file
 			console.log(data);
 			access_token = data.access_token;
-			access_token == null ? reject('null access_token') : writeTokenFile(callback);
+			if (access_token) {
+				writeTokenFile(callback);
+			}
 		})
 		.catch(function(error) {
 			console.log('in refresh(): ' + error);
@@ -90,15 +92,14 @@ function makeAPIRequest(spotify_endpoint, res) {
 	.then(response => {
 		if (response.status == 401) {
 			console.log(response.status + " " + response.statusText);
-			Promise.reject(refresh(makeAPIRequest(spotify_endpoint, res)));
+			refresh(() => makeAPIRequest(spotify_endpoint, res));
+		} else {
+			response.json()
+				.then(data => res.send(data))
+				.catch(error => ('error sending API response to express: ' + error));
 		}
-		return response.json();
 	})
-	.then(data => {
-		// console.log('data: ' + JSON.stringify(data, null, 2));
-		res.send(data);
-	})
-	.catch(error => console.error(error));
+	.catch(error => console.error('error making API fetch request: ' + error));
 }
 
 /*This function does not need to be edited.*/
@@ -172,7 +173,6 @@ router.get('/', function(req, res, next) {
 
 /*This function does not need to be edited.*/
 router.get('/me', function(req, res, next) {
-	console.log('/me makes api request to ' + req.url);
 	makeAPIRequest(spotify_base_uri + '/me', res);
 });
 
