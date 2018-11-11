@@ -68,9 +68,6 @@ function refresh(callback) {
 			access_token = data.access_token;
 			access_token == null ? reject('null access_token') : writeTokenFile(callback);
 		})
-		// .then(function() {
-		// 	callback(); //TODO: does this make it execute twice?
-		// })
 		.catch(function(error) {
 			console.log('in refresh(): ' + error);
 			reject(error);
@@ -78,9 +75,6 @@ function refresh(callback) {
 }
 
 function makeAPIRequest(spotify_endpoint, res) {
-	console.log('hello from webserver.makeAPIRequest()');
-	console.log('access_token: ' + access_token);
-
 	var headers = {
 		'Content-Type': 'application/json',
 		'Authorization': 'Bearer ' + access_token
@@ -96,19 +90,16 @@ function makeAPIRequest(spotify_endpoint, res) {
 	.then(response => {
 		if (response.status == 401) {
 			console.log(response.status + " " + response.statusText);
-			//exchange refresh_token for new access_token with this function as callback
-			// let callback = makeAPIRequest(spotify_endpoint, res);
-			// return reject(refresh(callback));
 			Promise.reject(refresh(makeAPIRequest(spotify_endpoint, res)));
 		}
 		return response.json();
 	})
 	.then(data => {
-		console.log('data: ' + JSON.stringify(data));
+		// console.log('data: ' + JSON.stringify(data, null, 2));
 		res.send(data);
 	})
 	.catch(error => console.error(error));
-} //end makeAPIRequest()
+}
 
 /*This function does not need to be edited.*/
 router.get('*', function(req, res, next) {

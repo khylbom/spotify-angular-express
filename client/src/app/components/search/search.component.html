@@ -25,8 +25,8 @@
 </form>
 <!--display a carousel component if searching for an artist or album-->
 <!--bind carousel's resources and give it a static carouselId-->
-<div *ngIf="searchCategory == 'artist'">
-	<app-carousel [carouselId]="'results'" [resources]="resources">Results carousel</app-carousel>
+<div *ngIf="searchCategory == 'artist' || searchCategory == 'album'">
+	<app-carousel [carouselId]="searchCategory" [resources]="resources">Results carousel</app-carousel>
 </div>
 <!--display a track-list compoinent if searching for a track-->
 <!--bind track-list tracks-->
