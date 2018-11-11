@@ -1,8 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { SpotifyService } from '../../services/spotify.service';
-import { ArtistData } from '../../data/artist-data';
-import { AlbumData } from '../../data/album-data';
-import { TrackData } from '../../data/track-data';
 import { ResourceData } from '../../data/resource-data';
 
 @Component({
@@ -19,14 +16,14 @@ export class SearchComponent implements OnInit {
 
   constructor(private spotifyService:SpotifyService) { }
 
+  clearResults() { this.resources = null; }
+
   ngOnInit() {
-    // this.searchCategory = "artist";
-    // console.log('default selected: ' + this.searchString);
   }
 
   search() {
     console.log("searching for " + this.searchCategory + "s... '" + this.searchString + "'...");
-    //TODO: call search function in spotifyService and parse response
+    //call search function in spotifyService and parse response
     this.spotifyService.searchFor(this.searchCategory, this.searchString)
       .then(resourceData => {
         this.resources = resourceData;
@@ -45,17 +42,12 @@ export class SearchComponent implements OnInit {
     console.log(this.searchCategory);
   }
 
-  parseResults():any[] {
-    var results:any[] = this.resources.map(result => {
-      switch(result.category) {
-        case "artist": { return new ArtistData(result); }
-        case "album": { return new AlbumData(result); }
-        case "track": { return new TrackData(result); }
-        default: { console.log("resource category unknown: " + result.category); return []; }
-      }
-    });
-    console.log(results);
-    return results;
+  showCarouselResults():boolean {
+    return (this.searchCategory === 'artist' || this.searchCategory === 'album');
+  }
+
+  showTrackListResults():boolean {
+    return (this.searchCategory == 'track');
   }
 
 }

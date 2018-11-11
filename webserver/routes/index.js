@@ -19,8 +19,6 @@ var refresh_token = null;
 
 /*This function does not need to be edited.*/
 function writeTokenFile(callback) {
-	console.log('hello from webserver.writeTokenFile()');
-	console.log('callback: ' + callback);
 	fs.writeFile('tokens.json', JSON.stringify({access_token: access_token, refresh_token: refresh_token}), callback);
 }
 
@@ -43,8 +41,7 @@ function readTokenAndClientSecretFiles(callback) {
 }
 
 function refresh(callback) {
-	console.log('hello from webserver.refresh()');
-	console.log('callback: ' + callback);
+	console.log('node exchanges refresh_token for new access_token');
 
 	const params = new URLSearchParams();
 	params.append('grant_type', 'refresh_token');
@@ -71,9 +68,9 @@ function refresh(callback) {
 			access_token = data.access_token;
 			access_token == null ? reject('null access_token') : writeTokenFile(callback);
 		})
-		.then(function() {
-			callback();
-		})
+		// .then(function() {
+		// 	callback(); //TODO: does this make it execute twice?
+		// })
 		.catch(function(error) {
 			console.log('in refresh(): ' + error);
 			reject(error);
@@ -96,20 +93,18 @@ function makeAPIRequest(spotify_endpoint, res) {
 		headers: headers,
 		json: true
 	})
-	// .then(response => response.json())
 	.then(response => {
 		if (response.status == 401) {
 			console.log(response.status + " " + response.statusText);
-			//exchange refresh token for new access_token with this function as callback
-			Promise.reject(refresh(() => { //use anonymous function
-				makeAPIRequest(spotify_endpoint, res);
-			}));
+			//exchange refresh_token for new access_token with this function as callback
+			// let callback = makeAPIRequest(spotify_endpoint, res);
+			// return reject(refresh(callback));
+			Promise.reject(refresh(makeAPIRequest(spotify_endpoint, res)));
 		}
 		return response.json();
 	})
-	.then(json => JSON.stringify(json))
 	.then(data => {
-		console.log('data: ' + data);
+		console.log('data: ' + JSON.stringify(data));
 		res.send(data);
 	})
 	.catch(error => console.error(error));
