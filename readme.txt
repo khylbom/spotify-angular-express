@@ -9,8 +9,14 @@
         taken so far (including the 2-quarter senior capstone project course, INF191A/B).
 
 2. What online resources did you consult when completing this assignment? (list specific URLs)
-    https://angular.io/guide/component-interaction#pass-data-from-parent-to-child-with-input-binding
-
+    ** Angular **
+        https://codecraft.tv/courses/angular/http/http-with-promises/#_using_promises
+        https://angular.io/guide/component-interaction#pass-data-from-parent-to-child-with-input-binding
+    ** Chroma.js **
+        https://www.vis4.net/blog/2013/09/mastering-multi-hued-color-scales/
+        http://gka.github.io/palettes/
+    ** Spotify API **
+        https://developer.spotify.com/documentation/web-api/reference/
 
 3. What classmates or other individuals did you consult as part of this assignment? What did you discuss?
     Read some of the questions/replies about the assignment on Slack, and contributed on a few.
@@ -19,8 +25,8 @@
 
 
 4. Did you add any bonus features to your submission? If so, what are they and how should we see them?
-
+    Not yet.
 
 
 5. Is there anything special we need to know in order to run your code?
-
+    No.
