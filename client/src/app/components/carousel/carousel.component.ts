@@ -7,8 +7,9 @@ import { ResourceData } from '../../data/resource-data';
   styleUrls: ['./carousel.component.css']
 })
 export class CarouselComponent implements OnInit {
-	@Input() carouselId:string;
-	@Input() resources:ResourceData[];
+  @Input() carouselId:string;
+  //alias child (card) component property name resources as 'results'
+  @Input() resources:ResourceData[];
 
   constructor() { }
 

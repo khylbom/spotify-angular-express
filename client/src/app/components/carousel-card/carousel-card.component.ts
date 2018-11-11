@@ -14,4 +14,8 @@ export class CarouselCardComponent implements OnInit {
   ngOnInit() {
   }
 
+  get localUrl():string {
+    return this.resource.category + "/" + this.resource.id;
+  }
+
 }

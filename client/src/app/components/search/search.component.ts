@@ -1,8 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { SpotifyService } from '../../services/spotify.service';
-import { ArtistData } from '../../data/artist-data';
-import { AlbumData } from '../../data/album-data';
-import { TrackData } from '../../data/track-data';
 import { ResourceData } from '../../data/resource-data';
 
 @Component({
@@ -19,11 +16,29 @@ export class SearchComponent implements OnInit {
 
   constructor(private spotifyService:SpotifyService) { }
 
+  clearResults() { this.resources = null; }
+
   ngOnInit() {
   }
 
   search() {
-    //TODO: call search function in spotifyService and parse response
+    //call search function in spotifyService and parse response
+    this.spotifyService.searchFor(this.searchCategory, this.searchString)
+      .then(resourceData => {
+        this.resources = resourceData;
+        console.debug(this.resources);
+      })
+      .catch(error => console.error('error performing spotify search: ' + error))
+  }
+
+  changeSearchString(string) {
+    this.searchString = string;
+    console.debug(this.searchString);
+  }
+
+  changeCategory(category) {
+    this.searchCategory = category;
+    console.debug(this.searchCategory);
   }
 
 }

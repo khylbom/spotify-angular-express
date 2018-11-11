@@ -1,12 +1,35 @@
 <h1>Search Spotify</h1>
-<!--TODO: bind input's model to searchString-->
-<input>
-<!--TODO: bind select's model to searchCategory-->
-<select>
-	<!--TODO: loop over searchCategories to create dropdown options-->
-	<!--populate body and text value https://www.w3schools.com/tags/att_option_selected.asp-->
-</select>
-<!--TODO: Call search function when the button is clicked-->
-<button class="btn btn-light">Search</button>
-<!--TODO: Display a carousel component if searching for an artist or album. Bind carousel's resources and give it a static carouselId.-->
-<!--TODO: Display a track-list component if searching for a track. Bind track-list's tracks.-->
+<form>
+	<div class="form-row">
+		<div class="col-6 col-med">
+			<!--bind input's model to searchString-->
+			<input type="search" class="form-control" [ngModel]="searchString" name="searchStringInput" (ngModelChange)="changeSearchString($event)" placeholder="Search" aria-label="Search">
+		</div>
+		<div class="col-med">
+			<!--bind select's model to searchCategory-->
+			<select class="form-control" [ngModel]="searchCategory" name="categoryDropdown" (ngModelChange)="changeCategory($event)">
+				<!--loop over searchCategories to create dropdown options-->
+				<!--populate body and text value https://www.w3schools.com/tags/att_option_selected.asp -->
+				<option *ngFor="let category of searchCategories; let first=first" [value]="category" [ngClass]="{'active': first}">
+					{{category}}
+				</option>
+			</select>
+		</div>
+		<div class="col-med">
+			<!--call search function when the button is clicked-->
+			<button type="submit" class="btn btn-light" (click)="search()">
+				Search
+			</button>
+		</div>
+	</div>
+</form>
+<!--display a carousel component if searching for an artist or album-->
+<!--bind carousel's resources and give it a static carouselId-->
+<div *ngIf="searchCategory == 'artist' || searchCategory == 'album'">
+	<app-carousel [carouselId]="'results'" [resources]="resources">Results carousel</app-carousel>
+</div>
+<!--display a track-list compoinent if searching for a track-->
+<!--bind track-list tracks-->
+<div *ngIf="searchCategory == 'track'">
+	<app-track-list [tracks]="resources">Results track-list</app-track-list>
+</div>

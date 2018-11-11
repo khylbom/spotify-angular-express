@@ -6,20 +6,27 @@ import { TrackData } from '../data/track-data';
 import { ResourceData } from '../data/resource-data';
 import { ProfileData } from '../data/profile-data';
 import { TrackFeatures } from '../data/track-features';
+import { resolve } from 'url';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SpotifyService {
-	expressBaseUrl:string = 'http://localhost:8888';
+  expressBaseUrl:string = 'http://localhost:8888';
 
   constructor(private http:HttpClient) { }
 
   private sendRequestToExpress(endpoint:string):Promise<any> {
-    //TODO: use the injected http Service to make a get request to the Express endpoint and return the response.
+    //use the injected http Service to make a get request to the Express endpoint and return the response.
     //the http service works similarly to fetch(). It may be useful to call .toPromise() on any responses.
     //update the return to instead return a Promise with the data from the Express server
-    return Promise.resolve();
+    return this.http.get(this.expressBaseUrl + endpoint)
+      .toPromise()
+      .then(res => { return res; })
+      .catch(error => {
+        console.log('error sending request to express: ' + error);
+        return error;
+      })
   }
 
   aboutMe():Promise<ProfileData> {
